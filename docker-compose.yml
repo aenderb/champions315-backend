@@ -1,0 +1,9 @@
+services:
+  champions315api-pg:
+    image: bitnami/postgresql
+    environment:
+      POSTGRESQL_USERNAME: docker
+      POSTGRESQL_PASSWORD: docker
+      POSTGRESQL_DATABASE: champions315apidb
+    ports:
+      - "5432:5432"

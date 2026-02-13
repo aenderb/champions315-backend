@@ -1,0 +1,34 @@
+# Dependencies
+node_modules
+
+# Build outputs
+build
+dist
+
+# Generated code
+/generated/prisma
+
+# Logs
+logs/
+*.log
+
+# Coverage reports
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# TypeScript
+*.tsbuildinfo
