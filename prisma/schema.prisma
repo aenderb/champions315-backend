@@ -58,6 +58,8 @@ model Team {
 
   user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   players Player[]
+  lineups Lineup[]
+  matches Match[]
 
   @@index([user_id])
   @@map("teams")
@@ -70,19 +72,94 @@ enum Position {
   FWD
 }
 
+enum FieldRole {
+  GK // Goleiro  
+  // Defesa
+  RL // Lateral Direito
+  RCB // Zagueiro Direito
+  LCB // Zagueiro Esquerdo
+  LL // Lateral Esquerdo
+  // Meio de Campo
+  RM // Meia Direita
+  CM // Volante / Centro
+  LM // Meia Esquerda
+  // Ataque
+  RW // Ponta Direita
+  ST // Centroavante
+  LW // Ponta Esquerda
+}
+
 model Player {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  team_id    String   @db.Uuid
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  team_id    String     @db.Uuid
   number     Int
   name       String
-  birth_date DateTime @db.Date
+  birth_date DateTime   @db.Date
   avatar     String?
   position   Position
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  field_role FieldRole?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
 
-  team Team @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  team       Team        @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  lineups    Lineup[]    @relation("LineupStarters")
+  bench      Lineup[]    @relation("LineupBench")
+  matchCards MatchCard[]
 
   @@index([team_id])
   @@map("players")
+}
+
+model Lineup {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  team_id    String   @db.Uuid
+  name       String
+  formation  String   @default("4-3-1")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  team     Team     @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  starters Player[] @relation("LineupStarters")
+  bench    Player[] @relation("LineupBench")
+
+  @@index([team_id])
+  @@map("lineups")
+}
+
+enum CardType {
+  YELLOW
+  RED
+}
+
+model Match {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  team_id        String   @db.Uuid
+  opponent_name  String
+  team_score     Int      @default(0)
+  opponent_score Int      @default(0)
+  date           DateTime @db.Date
+  notes          String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  team  Team        @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  cards MatchCard[]
+
+  @@index([team_id])
+  @@map("matches")
+}
+
+model MatchCard {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  match_id  String   @db.Uuid
+  player_id String   @db.Uuid
+  type      CardType
+  minute    Int?
+
+  match  Match  @relation(fields: [match_id], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [player_id], references: [id], onDelete: Cascade)
+
+  @@index([match_id])
+  @@index([player_id])
+  @@map("match_cards")
 }

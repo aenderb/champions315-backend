@@ -37,4 +37,14 @@ export class InMemoryUserRepository implements IUserRepository {
 
     return userWithoutPassword;
   }
+
+  async updateAvatar(id: string, avatar: string): Promise<Omit<User, "password_hash">> {
+    const index = this.users.findIndex((user) => user.id === id);
+
+    this.users[index].avatar = avatar;
+
+    const { password_hash, ...userWithoutPassword } = this.users[index];
+
+    return userWithoutPassword;
+  }
 }

@@ -9,6 +9,10 @@ const envSchema = z.object({
   JWT_EXPIRATION_TIME: z.string().default("15m"),
   JWT_REFRESH_SECRET: z.string(),
   JWT_REFRESH_EXPIRATION_TIME: z.string().default("7d"),
+  CORS_ORIGIN: z.string().default("http://localhost:5173").transform((val) => val.split(",").map((s) => s.trim())),
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
 });
 
 export const _env = envSchema.safeParse(process.env);

@@ -3,7 +3,8 @@
 import { Request, Response, NextFunction } from "express";
 import z from "zod";
 import { CreateUserService } from "../service/CreateUserService";
-import { PrismaUserRepository } from "../repository/PrismaUserRepository";import { HTTP_STATUS } from "@/shared/utils/httpStatus";
+import { PrismaUserRepository } from "../repository/PrismaUserRepository";
+import { HTTP_STATUS } from "@/shared/utils/httpStatus";
 export class CreateUserController {
   async handle(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
@@ -15,8 +16,12 @@ export class CreateUserController {
 
       const { name, email, password } = registerBodySchema.parse(req.body);
 
-      // Avatar vem do multer (req.file)
-      const avatar = req.file ? `/uploads/avatars/${req.file.filename}` : undefined;
+      // Avatar: upload para Cloudinary se enviado
+      let avatar: string | undefined;
+      if (req.file) {
+        const { uploadToCloudinary } = await import("@/shared/config/cloudinary");
+        avatar = await uploadToCloudinary(req.file.buffer, "avatars");
+      }
 
       // Injeção manual de dependências - a cada requisição
       const userRepository = new PrismaUserRepository();

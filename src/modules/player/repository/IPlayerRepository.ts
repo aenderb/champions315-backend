@@ -1,4 +1,4 @@
-import { Player, Position } from "../../../../generated/prisma";
+import { Player, Position, FieldRole } from "../../../../generated/prisma";
 
 export interface ICreatePlayerDTO {
   team_id: string;
@@ -7,6 +7,7 @@ export interface ICreatePlayerDTO {
   birth_date: Date;
   avatar?: string;
   position: Position;
+  field_role?: FieldRole;
 }
 
 export interface IUpdatePlayerDTO {
@@ -15,6 +16,7 @@ export interface IUpdatePlayerDTO {
   birth_date?: Date;
   avatar?: string | null;
   position?: Position;
+  field_role?: FieldRole | null;
 }
 
 export interface IPlayerRepository {

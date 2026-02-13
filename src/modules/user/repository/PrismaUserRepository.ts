@@ -45,4 +45,20 @@ export class PrismaUserRepository implements IUserRepository {
 
     return user;
   }
+
+  async updateAvatar(id: string, avatar: string): Promise<Omit<User, 'password_hash'>> {
+    const user = await prisma.user.update({
+      where: { id },
+      data: { avatar },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        created_at: true,
+      },
+    });
+
+    return user;
+  }
 }

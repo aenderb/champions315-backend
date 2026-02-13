@@ -3,7 +3,7 @@ import { ITeamRepository } from "@/modules/team/repository/ITeamRepository";
 import { ICreatePlayerInputDTO } from "../dto/CreatePlayerDTO";
 import { NotFoundError } from "@/shared/errors";
 import { ForbiddenError } from "@/shared/errors";
-import { Position } from "../../../../generated/prisma";
+import { Position, FieldRole } from "../../../../generated/prisma";
 
 export class CreatePlayerService {
   constructor(
@@ -29,6 +29,7 @@ export class CreatePlayerService {
       birth_date: new Date(data.birth_date),
       avatar: data.avatar,
       position: data.position as Position,
+      field_role: data.field_role as FieldRole | undefined,
     });
 
     return player;

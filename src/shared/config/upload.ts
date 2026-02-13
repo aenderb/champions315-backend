@@ -1,22 +1,12 @@
 import multer from 'multer';
-import path from 'node:path';
-import crypto from 'node:crypto';
 
-const uploadsFolder = path.resolve(process.cwd(), 'uploads', 'avatars');
+const storage = multer.memoryStorage();
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadsFolder);
-  },
-  filename: (_req, file, cb) => {
-    const hash = crypto.randomBytes(8).toString('hex');
-    const ext = path.extname(file.originalname);
-    const filename = `${hash}-${Date.now()}${ext}`;
-    cb(null, filename);
-  },
-});
-
-export const uploadAvatar = multer({
+/**
+ * Multer com memoryStorage — arquivo fica em req.file.buffer
+ * para ser enviado ao Cloudinary.
+ */
+export const upload = multer({
   storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
@@ -31,5 +21,3 @@ export const uploadAvatar = multer({
     }
   },
 });
-
-export { uploadsFolder };

@@ -14,4 +14,5 @@ export interface IUserRepository {
   create(data: ICreateUserDTO): Promise<User>;
   findByEmail(email: string): Promise<User | null>;
   findById(id: string): Promise<Omit<User, 'password_hash'> | null>;
+  updateAvatar(id: string, avatar: string): Promise<Omit<User, 'password_hash'>>;
 }

@@ -15,20 +15,25 @@ export class CreatePlayerController {
       const createPlayerSchema = z.object({
         number: z.coerce.number().int().min(1).max(99),
         name: z.string().min(2).max(100),
-        birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato esperado: YYYY-MM-DD"),
-        avatar: z.string().optional(),
+        birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato esperado: YYYY-MM-DD").refine((d) => !isNaN(new Date(d).getTime()), "Data inválida"),
         position: z.enum(["GK", "DEF", "MID", "FWD"]),
+        field_role: z.enum(["GK", "RL", "RCB", "LCB", "LL", "RM", "CM", "LM", "RW", "ST", "LW"]).optional(),
       });
 
       const { teamId } = paramsSchema.parse(req.params);
       const data = createPlayerSchema.parse(req.body);
+      let avatar: string | undefined;
+      if (req.file) {
+        const { uploadToCloudinary } = await import("@/shared/config/cloudinary");
+        avatar = await uploadToCloudinary(req.file.buffer, "players");
+      }
       const userId = req.userId!;
 
       const playerRepository = new PrismaPlayerRepository();
       const teamRepository = new PrismaTeamRepository();
       const createPlayerService = new CreatePlayerService(playerRepository, teamRepository);
 
-      const player = await createPlayerService.execute(userId, teamId, data);
+      const player = await createPlayerService.execute(userId, teamId, { ...data, avatar });
 
       return res.status(HTTP_STATUS.CREATED).json(player);
     } catch (error) {

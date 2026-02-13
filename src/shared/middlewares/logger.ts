@@ -14,6 +14,7 @@ export const requestLogger = expressWinston.logger({
     winston.format.json()
   ),
   meta: true,
+  bodyBlacklist: ['password', 'password_hash'],
   msg: 'HTTP {{req.method}} {{req.url}}',
   expressFormat: true,
   colorize: false,

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaRefreshTokenRepository } from "../repository/PrismaRefreshTokenRepository";
 import { HTTP_STATUS } from "@/shared/utils/httpStatus";
+import { env } from "@/env";
 
 export class LogoutController {
   async handle(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
@@ -11,16 +12,16 @@ export class LogoutController {
         await refreshTokenRepository.revokeByUserId(req.userId);
       }
 
-      // Limpa ambos os cookies
-      res.clearCookie("token", {
+      const cookieOptions = {
         httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: env.NODE_ENV === "production" ? "strict" as const : "lax" as const,
         path: "/",
-      });
+      };
 
-      res.clearCookie("refresh_token", {
-        httpOnly: true,
-        path: "/",
-      });
+      // Limpa ambos os cookies com mesmas flags de criação
+      res.clearCookie("token", cookieOptions);
+      res.clearCookie("refresh_token", cookieOptions);
 
       return res.status(HTTP_STATUS.OK).json({ message: "Logout realizado com sucesso" });
     } catch (error) {
