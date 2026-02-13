@@ -44,6 +44,9 @@ export class AuthenticateUserService {
     // Revoga todos os refresh tokens anteriores do usuário
     await this.refreshTokenRepository.revokeByUserId(user.id);
 
+    // Limpeza assíncrona — remove tokens expirados/revogados sem bloquear o response
+    this.refreshTokenRepository.deleteExpired().catch(() => {});
+
     // Salva o novo refresh token no banco
     await this.refreshTokenRepository.create({
       token_hash: refreshTokenHash,

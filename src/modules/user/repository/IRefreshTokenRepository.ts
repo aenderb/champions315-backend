@@ -1,4 +1,4 @@
-import { RefreshToken } from "../../../generated/prisma";
+import { RefreshToken } from "../../../../generated/prisma";
 
 export interface ICreateRefreshTokenDTO {
   token_hash: string;

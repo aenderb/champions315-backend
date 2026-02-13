@@ -1,4 +1,4 @@
-import { User } from "../../../generated/prisma";
+import { User } from "../../../../generated/prisma";
 import { randomUUID } from "node:crypto";
 import { IUserRepository, ICreateUserDTO } from "./IUserRepository";
 

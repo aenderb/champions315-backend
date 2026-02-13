@@ -1,6 +1,6 @@
 // PrismaUserRepository
 
-import { User } from "../../../generated/prisma";
+import { User } from "../../../../generated/prisma";
 import { prisma } from "@/shared/infra/prisma/client";
 import { ICreateUserDTO, IUserRepository } from "./IUserRepository";
 

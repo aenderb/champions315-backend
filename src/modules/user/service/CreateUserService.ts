@@ -1,6 +1,6 @@
 // CreateUserService
 
-import { User } from "../../../generated/prisma";
+import { User } from "../../../../generated/prisma";
 import { hash, genSalt } from "bcryptjs";
 import { ConflictError } from "@/shared/errors";
 import { IUserRepository } from "../repository/IUserRepository";

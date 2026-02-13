@@ -1,6 +1,6 @@
 // IUserRepository
 
-import { User } from "../../../generated/prisma";
+import { User } from "../../../../generated/prisma";
 
 // DTO para o Repository - Dados já processados
 export interface ICreateUserDTO {

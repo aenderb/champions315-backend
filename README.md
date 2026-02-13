@@ -1,526 +1,461 @@
 # 🏋️ Champions315 API
 
-> 🚧 **Work in Progress** - This project is under active development
+RESTful API de autenticação e gerenciamento de usuários, construída com **princípios SOLID** e **arquitetura enterprise**. Sistema completo de autenticação via cookies httpOnly com access token + refresh token.
 
-RESTful API focused on user authentication and management, built with **SOLID principles** and **enterprise-grade architecture**. This API provides a complete authentication and user management system with professional logging, error handling, and monitoring.
+---
 
-## ✨ Features Implemented
+## 📑 Índice
 
-### 🔐 Authentication & Authorization
-- ✅ User registration with email validation
-- ✅ JWT-based authentication
-- ✅ Password hashing with bcrypt (salt 6)
-- ✅ Token expiration control
-- ✅ Secure password storage
+- [Tech Stack](#-tech-stack)
+- [Arquitetura](#-arquitetura)
+- [Funcionalidades](#-funcionalidades)
+- [Pré-requisitos](#-pré-requisitos)
+- [Instalação](#-instalação)
+- [Variáveis de Ambiente](#-variáveis-de-ambiente)
+- [Banco de Dados](#-banco-de-dados)
+- [Executando](#-executando)
+- [Endpoints](#-endpoints)
+- [Fluxo de Autenticação](#-fluxo-de-autenticação)
+- [Testes](#-testes)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Scripts Disponíveis](#-scripts-disponíveis)
 
-### 👤 User Management
-- ✅ Create user (POST /users/signup)
-- ✅ Authenticate user (POST /users/signin)
-- ✅ Get user by ID (GET /users/:id)
-- ✅ Password hash hidden from responses
-- Test
-
-### 🏗️ Architecture & Best Practices
-- ✅ **SOLID principles** implementation
-- ✅ **Repository Pattern** for data access
-- ✅ **Service Layer** for business logic
-- ✅ **DTOs** (Data Transfer Objects)
-- ✅ **Dependency Injection** (manual)
-- ✅ **Custom Error Classes** by HTTP status
-- ✅ **Global Error Handler**
-- ✅ **Request/Error Logging** with Winston
-- ✅ **Environment validation** with Zod
-- ✅ **HTTP Status Constants** (no magic numbers)
-
-### 📊 Monitoring & Logging
-- ✅ Winston logger (request.log, error.log, combined.log)
-- ✅ Health check endpoint (/health)
-- ✅ Database connection monitoring
-- ✅ Structured JSON logs
-- ✅ Migration-ready for Elasticsearch
-
-### 🛡️ Security & Rate Limiting
-- ✅ Rate limiting with express-rate-limit
-- ✅ Different limits per endpoint (signup, signin, general)
-- ✅ DDoS protection
-- ✅ Brute force attack prevention
-- ✅ Environment-based rate limits (dev vs prod)
-
-### 🧪 Testing
-- ✅ Vitest for unit testing
-- ✅ In-Memory Repository pattern
-- ✅ Test coverage reports (v8)
-- ✅ Vitest UI for visual test management
-- ✅ 100% coverage on CreateUserService
+---
 
 ## 🛠️ Tech Stack
 
-### Core
-- **Node.js 18+** - JavaScript runtime
-- **TypeScript 5.9** - Type safety
-- **Express 5.1** - Web framework
-- **Prisma 7.3** - Modern ORM
-- **PostgreSQL** - Relational database
+| Camada | Tecnologia | Versão |
+|--------|-----------|--------|
+| Runtime | Node.js | 18+ |
+| Linguagem | TypeScript | 5.9 |
+| Framework | Express | 5.1 |
+| ORM | Prisma | 7.3 |
+| Banco de Dados | PostgreSQL | latest |
+| Autenticação | jsonwebtoken (JWT) | 9.0 |
+| Hash de Senha | bcryptjs | 3.0 |
+| Validação | Zod | 4.1 |
+| Upload | Multer | 2.0 |
+| Logging | Winston | 3.19 |
+| Testes | Vitest | 4.0 |
+| Containerização | Docker Compose | - |
 
-### Security & Validation
-- **JWT (jsonwebtoken)** - Token-based auth
-- **bcryptjs** - Password hashing
-- **Zod 4.1** - Schema validation
+---
 
-### Logging & Monitoring
-- **Winston** - Professional logging
-- **express-winston** - HTTP request logging
+## 🏗️ Arquitetura
 
-### Security
-- **express-rate-limit** - API rate limiting
+O projeto segue uma arquitetura em camadas com princípios SOLID:
 
-### Testing
-- **Vitest** - Fast unit testing framework
-- **@vitest/coverage-v8** - Code coverage reports
-- **@vitest/ui** - Visual test management
-
-### Development
-- **tsx** - TypeScript execution
-- **ESLint** - Code linting
-- **Docker** - Database containerization
-
-## 📦 Prerequisites
-
-- Node.js 18 or higher
-- Docker and Docker Compose
-- npm or yarn
-
-## 🚀 Quick Start
-
-### 1. Clone the repository
-```bash
-git clone <repository-url>
-cd champions315api
+```
+Request → Route → Middleware → Controller → Service → Repository → Database
 ```
 
-### 2. Install dependencies
+| Camada | Responsabilidade |
+|--------|-----------------|
+| **Routes** | Definição de endpoints e middlewares |
+| **Controller** | Validação do request (Zod), orquestração |
+| **Service** | Lógica de negócio |
+| **Repository** | Acesso a dados (interface + implementação) |
+| **Middleware** | Auth, rate limiting, logging, error handling |
+
+**Padrões aplicados:**
+- Repository Pattern com interfaces (`IUserRepository`, `IRefreshTokenRepository`)
+- Dependency Injection manual (service recebe repository via construtor)
+- DTOs para transferência de dados entre camadas
+- Custom Error Classes por tipo de erro HTTP
+- In-Memory Repository para testes
+
+---
+
+## ✨ Funcionalidades
+
+### 🔐 Autenticação
+- Registro de usuário com validação de email
+- Login com cookies httpOnly (access token + refresh token)
+- Access token JWT com expiração curta (15 min)
+- Refresh token opaco com expiração longa (7 dias)
+- Hash SHA-256 do refresh token no banco (nunca salva o token original)
+- Revogação de tokens no logout
+- Rotação automática de refresh tokens no login
+
+### 👤 Usuários
+- Cadastro com upload de avatar (JPEG, PNG, WebP — máx. 5MB)
+- Consulta de usuário por ID (sem expor password_hash)
+
+### 🛡️ Segurança
+- Rate limiting por endpoint (signup, signin, geral)
+- Proteção contra brute force e DDoS
+- Cookies httpOnly + secure + sameSite
+- Senhas com bcrypt (salt 10)
+- Variáveis de ambiente validadas com Zod
+
+### 📊 Monitoramento
+- Winston logger (request.log, error.log, combined.log)
+- Health check endpoint (`/health`)
+- Logs estruturados em JSON
+
+---
+
+## 📋 Pré-requisitos
+
+- **Node.js** 18+
+- **Docker** e **Docker Compose** (para o PostgreSQL)
+- **npm** ou **yarn**
+
+---
+
+## 🚀 Instalação
+
 ```bash
+# Clonar o repositório
+git clone <repo-url>
+cd champions315-backend
+
+# Instalar dependências
 npm install
+
+# Copiar variáveis de ambiente
+cp .env.example .env
+
+# Subir o PostgreSQL
+docker compose up -d
+
+# Rodar migrations
+npx prisma migrate dev
+
+# Iniciar em desenvolvimento
+npm run start:dev
 ```
 
-### 3. Configure environment variables
-Create a `.env` file in the root directory:
+---
+
+## 🔑 Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
 
 ```env
 NODE_ENV=dev
 PORT=3333
+
 DATABASE_URL="postgresql://docker:docker@localhost:5432/champions315apidb?schema=public"
-JWT_SECRET="your-super-secret-key-change-in-production"
-JWT_EXPIRATION_TIME="7d"
+
+# Access Token (curta duração)
+JWT_SECRET="sua-chave-secreta-aqui"
+JWT_EXPIRATION_TIME="15m"
+
+# Refresh Token (longa duração)
+JWT_REFRESH_SECRET="outra-chave-secreta-aqui"
+JWT_REFRESH_EXPIRATION_TIME="7d"
 ```
 
-⚠️ **IMPORTANT**: Change `JWT_SECRET` in production! Generate a secure key:
+| Variável | Descrição | Default |
+|----------|-----------|---------|
+| `NODE_ENV` | Ambiente (dev, test, production) | `dev` |
+| `PORT` | Porta do servidor | `3333` |
+| `DATABASE_URL` | Connection string PostgreSQL | - |
+| `JWT_SECRET` | Chave para assinar o access token | - |
+| `JWT_EXPIRATION_TIME` | Expiração do access token | `15m` |
+| `JWT_REFRESH_SECRET` | Chave para o refresh token | - |
+| `JWT_REFRESH_EXPIRATION_TIME` | Expiração do refresh token | `7d` |
+
+---
+
+## 🗄️ Banco de Dados
+
+### Subir com Docker Compose
+
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+docker compose up -d
 ```
 
-### 4. Start PostgreSQL with Docker
-```bash
-docker-compose up -d
-```
+Isso cria um container PostgreSQL com:
+- **User:** docker
+- **Password:** docker  
+- **Database:** champions315apidb
+- **Porta:** 5432
 
-### 5. Run database migrations
-```bash
-npx prisma migrate dev
-```
+### Schema Prisma
 
-### 6. Start development server
-```bash
-npm run start:dev
-```
-
-Server will be running at `http://localhost:3333`
-
-## 📚 API Endpoints
-
-### Health Check
-```http
-GET /health
-```
-Returns API health status and database connection.
-
-**Response:**
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-02-02T12:00:00.000Z",
-  "uptime": 123.45,
-  "database": "connected"
+```prisma
+model User {
+  id             String         @id @db.Uuid
+  name           String
+  email          String         @unique
+  password_hash  String
+  avatar         String?
+  created_at     DateTime       @default(now())
+  refresh_tokens RefreshToken[]
 }
+
+model RefreshToken {
+  id         String    @id @db.Uuid
+  token_hash String
+  user_id    String    @db.Uuid
+  expires_at DateTime
+  created_at DateTime  @default(now())
+  revoked_at DateTime?
+}
+```
+
+### Comandos úteis
+
+```bash
+# Criar/aplicar migrations
+npx prisma migrate dev --name descricao
+
+# Verificar status das migrations
+npx prisma migrate status
+
+# Abrir Prisma Studio (UI visual)
+npx prisma studio
+
+# Resetar banco (cuidado!)
+npx prisma migrate reset
 ```
 
 ---
 
-### User Registration
-```http
-POST /users/signup
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "securePassword123"
-}
-```
-
-**Rate Limit:** 3 accounts per hour (dev: 100)
-
-**Response (201):**
-```json
-{
-  "id": "uuid",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "created_at": "2026-02-02T12:00:00.000Z"
-}
-```
-
----
-
-### User Authentication
-```http
-POST /users/signin
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "securePassword123"
-}
-```
-
-**Rate Limit:** 5 attempts per 15 minutes (dev: 100)
-
-**Response (200):**
-```json
-{
-  "user": {
-    "id": "uuid",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "created_at": "2026-02-02T12:00:00.000Z"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
----
-
-### Get User by ID
-```http
-GET /users/:id
-```
-
-**Response (200):**
-```json
-{
-  "id": "uuid",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "created_at": "2026-02-02T12:00:00.000Z"
-}
-```
-
-## 🗂️ Project Structure
-
-```
-src/
-├── app.ts                          # Express app configuration
-├── server.ts                       # Server entry point
-├── routes.ts                       # Main routes aggregator
-├── env/
-│   └── index.ts                    # Environment validation (Zod)
-├── modules/
-│   └── user/
-│       ├── controller/             # HTTP layer
-│       │   ├── CreateUserController.ts
-│       │   ├── AuthenticateUserController.ts
-│       │   └── GetUserByIdController.ts
-│       ├── service/                # Business logic
-│       │   ├── CreateUserService.ts
-│       │   ├── AuthenticateUserService.ts
-│       │   └── GetUserByIdService.ts
-│       ├── repository/             # Data access
-│       │   ├── IUserRepository.ts
-│       │   ├── PrismaUserRepository.ts
-│       │   └── InMemoryUserRepository.ts  # For testing
-│       ├── dto/                    # Data Transfer Objects
-│       │   ├── CreateUserDTO.ts
-│       │   └── AuthenticateUserDTO.ts
-│       └── routes.ts               # User routes
-└── shared/
-    ├── config/
-    │   └── logger.ts               # Winston configuration
-    ├── controllers/
-    │   └── HealthCheckController.ts
-    ├── errors/                     # Custom error classes
-    │   ├── BadRequestError.ts      # 400
-    │   ├── UnauthorizedError.ts    # 401
-    │   ├── ForbiddenError.ts       # 403
-    │   ├── NotFoundError.ts        # 404
-    │   ├── ConflictError.ts        # 409
-    │   └── index.ts
-    ├── middlewares/
-    │   ├── errorHandler.ts         # Global error handler
-    │   ├── logger.ts               # Request/error logger
-    │   └── rateLimiter.ts          # Rate limiting configs
-    ├── utils/
-    │   └── httpStatus.ts           # HTTP status constants
-    └── infra/
-        └── prisma/
-            └── client.ts           # Prisma client instance
-```
-
-## 🔑 Environment Variables
-
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `NODE_ENV` | Environment (dev/test/production) | dev | No |
-| `PORT` | Server port | 3333 | No |
-| `DATABASE_URL` | PostgreSQL connection string | - | Yes |
-| `JWT_SECRET` | Secret key for JWT signing | - | Yes |
-| `JWT_EXPIRATION_TIME` | Token expiration time | 7d | No |
-| `LOG_LEVEL` | Winston log level (info/warn/error) | info | No |
-
-## 📝 Available Scripts
+## ▶️ Executando
 
 ```bash
-# Development with hot reload
+# Desenvolvimento (com hot reload)
 npm run start:dev
 
-# Build for production
+# Build para produção
 npm run build
 
-# Start production server
+# Produção
 npm start
 
-# Testing
-npm test              # Run tests
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
-npm run test:ui       # Visual test UI
-
-# Database
-npx prisma studio     # DB viewer
-npx prisma migrate dev --name migration_name  # Create migration
-npx prisma generate   # Generate Prisma Client
+# Com Docker Compose (produção)
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-## 🔒 Security Best Practices
+O servidor inicia em `http://localhost:3333`.
 
-- ✅ Passwords hashed with bcrypt
-- ✅ JWT tokens with expiration
-- ✅ Environment variables validation
-- ✅ Input validation with Zod
-- ✅ SQL injection prevention (Prisma ORM)
-- ✅ **Rate limiting implemented** (DDoS, brute force protection)
-- ✅ Environment-based rate limits (dev/prod)
-- ⚠️ **TODO**: Add CORS configuration
-- ⚠️ **TODO**: Add Helmet.js for security headers
-- ⚠️ **TODO**: Increase bcrypt salt to 10 in production
+---
 
-### Rate Limiting Configuration
+## 📡 Endpoints
 
-| Endpoint | Production Limit | Development Limit |
-|----------|------------------|-------------------|
-| General (all routes) | 100 req/15min | 1000 req/15min |
-| POST /users/signin | 5 attempts/15min | 100 attempts/15min |
-| POST /users/signup | 3 accounts/hour | 100 accounts/hour |
+### Health Check
 
-## 📊 Logging
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/health` | ❌ | Status da API e banco |
 
-Logs are stored in the `logs/` directory:
+### Usuários
 
-- **request.log** - All HTTP requests
-- **error.log** - Application errors
-- **combined.log** - Everything
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/users/signup` | ❌ | Cadastro de usuário |
+| POST | `/users/signin` | ❌ | Login (retorna cookies) |
+| POST | `/users/refresh` | ❌ | Renovar access token |
+| POST | `/users/logout` | ✅ | Logout (revoga tokens) |
+| GET | `/users/:id` | ✅ | Buscar usuário por ID |
 
-Logs are in JSON format for easy parsing and can be migrated to Elasticsearch. See [LOGGING_MIGRATION.md](LOGGING_MIGRATION.md) for details.
+### Detalhes das requisições
 
-## 🧪 Testing
+#### `POST /users/signup`
 
-### Run Tests
 ```bash
-# Run all tests
+curl -X POST http://localhost:3333/users/signup \
+  -F "name=João Silva" \
+  -F "email=joao@email.com" \
+  -F "password=123456" \
+  -F "avatar=@/caminho/foto.jpg"
+```
+
+**Response** `201 Created`:
+```json
+{
+  "id": "uuid",
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "avatar": "/uploads/avatars/1707...-foto.jpg",
+  "created_at": "2026-02-12T..."
+}
+```
+
+#### `POST /users/signin`
+
+```bash
+curl -X POST http://localhost:3333/users/signin \
+  -H "Content-Type: application/json" \
+  -d '{"email": "joao@email.com", "password": "123456"}' \
+  -c cookies.txt
+```
+
+**Response** `200 OK`:
+```json
+{ "user": { "id": "uuid", "name": "João Silva", "email": "joao@email.com" } }
+```
+
+**Cookies setados:**
+- `token` — access token (httpOnly, 15 min)
+- `refresh_token` — refresh token (httpOnly, 7 dias)
+
+#### `POST /users/refresh`
+
+```bash
+curl -X POST http://localhost:3333/users/refresh \
+  -b cookies.txt -c cookies.txt
+```
+
+**Response** `200 OK`:
+```json
+{ "user": { "id": "uuid", "name": "João Silva", "email": "joao@email.com" } }
+```
+
+Renova o cookie `token` com um novo access token.
+
+#### `POST /users/logout`
+
+```bash
+curl -X POST http://localhost:3333/users/logout \
+  -b cookies.txt
+```
+
+**Response** `200 OK`:
+```json
+{ "message": "Logout realizado com sucesso" }
+```
+
+#### `GET /users/:id`
+
+```bash
+curl http://localhost:3333/users/uuid-aqui \
+  -b cookies.txt
+```
+
+**Response** `200 OK`:
+```json
+{
+  "id": "uuid",
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "avatar": "/uploads/avatars/...",
+  "created_at": "2026-02-12T..."
+}
+```
+
+---
+
+## 🔄 Fluxo de Autenticação
+
+```
+1. POST /signin → valida credenciais → gera access token (JWT, 15min) + refresh token (opaco, 7d)
+2. Salva SHA-256 do refresh token no banco, revoga tokens anteriores
+3. Seta dois cookies httpOnly: "token" e "refresh_token"
+4. Requisições autenticadas → middleware lê cookie "token" → jwt.verify
+5. Após 15min, access token expira → front recebe 401
+6. POST /refresh → valida refresh token via hash no banco → gera novo access token
+7. POST /logout → revoga refresh tokens no banco + limpa cookies
+```
+
+**Por que dois tokens?**
+
+| | Access Token | Refresh Token |
+|---|---|---|
+| Formato | JWT (assinado) | Opaco (random bytes) |
+| Duração | 15 minutos | 7 dias |
+| No banco? | Não (stateless) | Sim (hash SHA-256) |
+| Revogável? | Não (expira sozinho) | Sim (revoked_at) |
+
+---
+
+## 🧪 Testes
+
+```bash
+# Rodar todos os testes
 npm test
 
-# Watch mode
+# Testes com watch mode
 npm run test:watch
 
-# Coverage report
+# Cobertura de testes
 npm run test:coverage
 
-# Visual UI
+# Interface visual do Vitest
 npm run test:ui
 ```
 
-### Test Coverage
-Current coverage: **47.61%** (CreateUserService: 100%)
-
-```
-----------------------------|---------|----------|---------|---------|
-File                        | % Stmts | % Branch | % Funcs | % Lines |
-----------------------------|---------|----------|---------|---------|
-CreateUserService.ts        |     100 |      100 |     100 |     100 |
-InMemoryUserRepository.ts   |   53.84 |       50 |   66.66 |   54.54 |
-----------------------------|---------|----------|---------|---------|
-```
-
-### Testing Strategy
-- **In-Memory Repository** - Fast, isolated tests without database
-- **Unit Tests** - Service layer logic validation
-- **100% Coverage Goal** - All critical business logic covered
-
-Coverage reports: `coverage/index.html`
-
-## 🚀 Deployment
-
-### Production Checklist
-
-- [ ] Change `JWT_SECRET` to a secure random value
-- [ ] Set `NODE_ENV=production`
-- [ ] Configure production `DATABASE_URL`
-- [ ] Increase bcrypt salt to 10
-- [x] Add rate limiting ✅
-- [ ] Configure CORS
-- [ ] Add Helmet.js
-- [ ] Set up log rotation
-- [ ] Configure monitoring (Sentry, New Relic)
-- [ ] Run migrations: `npx prisma migrate deploy`
-- [ ] Review rate limit values for production
-
-## 📈 Roadmap
-
-### Next Features
-- [ ] Refresh tokens
-- [ ] Email verification
-- [ ] Password reset
-- [ ] User profile update/delete
-- [ ] Role-based authorization
-- [ ] Pagination
-- [ ] API documentation (Swagger)
-
-### Future Improvements
-- [x] Unit tests (Vitest) ✅
-- [ ] Integration tests (E2E)
-- [ ] CI/CD pipeline (GitHub Actions)
-- [ ] Redis caching
-- [ ] DI Container (tsyringe)
-- [ ] GraphQL API
-- [ ] WebSocket notifications
-- [ ] Increase test coverage to 80%+
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the ISC License.
+Os testes usam **In-Memory Repository** — não precisam de banco de dados.
 
 ---
 
-**Made with ❤️ using SOLID principles and enterprise-grade architecture**
-```bash
-npm install
-```
-
-3. **Configure environment variables**
-```bash
-cp .env.example .env
-```
-
-Edit the `.env` file with your settings:
-```env
-DATABASE_URL="postgresql://docker:docker@localhost:5432/champions315apidb"
-PORT=3000
-```
-
-4. **Start the database with Docker**
-```bash
-docker-compose up -d
-```
-
-5. **Run Prisma migrations**
-```bash
-npx prisma migrate dev
-```
-
-6. **Start the development server**
-```bash
-npm run start:dev
-```
-
-The server will be available at `http://localhost:3000`
-
-## 🗄️ Database Structure
-
-### User
-- `id` - Unique user UUID
-- `name` - Full name
-- `email` - Unique email
-- `password_hash` - Encrypted password
-- `created_at` - Creation date
-
-## 📝 Available Scripts
-
-```bash
-# Development with hot reload
-npm run start:dev
-
-# Build for production
-npm run build
-
-# Start in production
-npm run start
-
-# Prisma Studio (visual database interface)
-npx prisma studio
-
-# Generate Prisma Client
-npx prisma generate
-```
-
-## 🐳 Docker
-
-The project uses Docker Compose to manage the PostgreSQL database:
-
-```bash
-# Start containers
-docker-compose up -d
-
-# Stop containers
-docker-compose stop
-
-# View logs
-docker-compose logs -f
-```
-
-## 🏗️ Directory Structure
+## 📁 Estrutura do Projeto
 
 ```
-champions315api/
-├── src/
-│   ├── app.ts           # Express configuration
-│   ├── server.ts        # Server initialization
-│   └── env/             # Environment variables validation
-├── prisma/
-│   ├── schema.prisma    # Database schema
-│   └── migrations/      # Migration history
-├── generated/           # Generated Prisma Client
-├── docker-compose.yml   # Docker configuration
-└── package.json         # Dependencies and scripts
+src/
+├── app.ts                          # Configuração do Express
+├── server.ts                       # Inicialização do servidor
+├── routes.ts                       # Rotas principais
+├── env/
+│   └── index.ts                    # Validação de variáveis (Zod)
+├── @types/
+│   └── express.d.ts                # Extensão do Request (userId)
+├── modules/
+│   └── user/
+│       ├── routes.ts               # Rotas de /users
+│       ├── controller/
+│       │   ├── AuthenticateUserController.ts
+│       │   ├── CreateUserController.ts
+│       │   ├── GetUserByIdController.ts
+│       │   ├── LogoutController.ts
+│       │   └── RefreshTokenController.ts
+│       ├── service/
+│       │   ├── AuthenticateUserService.ts
+│       │   ├── CreateUserService.ts
+│       │   ├── GetUserByIdService.ts
+│       │   └── RefreshTokenService.ts
+│       ├── repository/
+│       │   ├── IUserRepository.ts
+│       │   ├── IRefreshTokenRepository.ts
+│       │   ├── PrismaUserRepository.ts
+│       │   ├── PrismaRefreshTokenRepository.ts
+│       │   └── InMemoryUserRepository.ts
+│       └── dto/
+│           ├── AuthenticateUserDTO.ts
+│           └── CreateUserDTO.ts
+└── shared/
+    ├── config/
+    │   ├── logger.ts               # Configuração Winston
+    │   └── upload.ts               # Configuração Multer
+    ├── controllers/
+    │   └── HealthCheckController.ts
+    ├── errors/
+    │   ├── BadRequestError.ts
+    │   ├── ConflictError.ts
+    │   ├── ForbiddenError.ts
+    │   ├── NotFoundError.ts
+    │   └── UnauthorizedError.ts
+    ├── infra/
+    │   └── prisma/
+    │       └── client.ts           # Instância do PrismaClient
+    ├── middlewares/
+    │   ├── ensureAuth.ts           # Validação JWT via cookie
+    │   ├── errorHandler.ts         # Tratamento global de erros
+    │   ├── logger.ts               # Request/Error logging
+    │   └── rateLimiter.ts          # Rate limiting
+    └── utils/
+        └── httpStatus.ts           # Constantes HTTP
 ```
-
-
-
-## 👨‍💻 Author
-Developed by Aender Binoto
 
 ---
 
-⭐ If this project was helpful to you, consider giving it a star!
+## 📜 Scripts Disponíveis
+
+| Script | Comando | Descrição |
+|--------|---------|-----------|
+| `start:dev` | `npm run start:dev` | Dev com hot reload (tsx watch) |
+| `start` | `npm start` | Produção (node build/) |
+| `build` | `npm run build` | Build com tsup |
+| `test` | `npm test` | Rodar testes |
+| `test:watch` | `npm run test:watch` | Testes com watch |
+| `test:coverage` | `npm run test:coverage` | Cobertura de testes |
+| `test:ui` | `npm run test:ui` | Interface visual Vitest |
+
+---
+
+## 📄 Licença
+
+ISC

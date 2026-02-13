@@ -1,4 +1,4 @@
-import { RefreshToken } from "../../../generated/prisma";
+import { RefreshToken } from "../../../../generated/prisma";
 import { prisma } from "@/shared/infra/prisma/client";
 import { ICreateRefreshTokenDTO, IRefreshTokenRepository } from "./IRefreshTokenRepository";
 
@@ -51,9 +51,10 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
   async deleteExpired(): Promise<void> {
     await prisma.refreshToken.deleteMany({
       where: {
-        expires_at: {
-          lt: new Date(),
-        },
+        OR: [
+          { expires_at: { lt: new Date() } },
+          { revoked_at: { not: null } },
+        ],
       },
     });
   }
