@@ -24,6 +24,7 @@ model User {
   avatar         String?
   created_at     DateTime       @default(now())
   refresh_tokens RefreshToken[]
+  teams          Team[]
 
   @@map("users")
 }
@@ -41,4 +42,22 @@ model RefreshToken {
   @@index([user_id])
   @@index([token_hash])
   @@map("refresh_tokens")
+}
+
+model Team {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String   @db.Uuid
+  name         String
+  color        String
+  badge        String?
+  year         Int?
+  sponsor      String?
+  sponsor_logo String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("teams")
 }
