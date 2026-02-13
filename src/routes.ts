@@ -3,6 +3,7 @@
 import { Router } from "express";
 import userRoutes from "./modules/user/routes";
 import teamRoutes from "./modules/team/routes";
+import playerRoutes from "./modules/player/routes";
 import { HealthCheckController } from "./shared/controllers/HealthCheckController";
 
 const routes = Router();
@@ -13,5 +14,6 @@ routes.get("/health", healthCheckController.handle);
 
 routes.use("/users", userRoutes);
 routes.use("/teams", teamRoutes);
+routes.use("/teams/:teamId/players", playerRoutes);
 
 export default routes;
