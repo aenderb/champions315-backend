@@ -1,6 +1,6 @@
 services:
   champions315api-pg:
-    image: bitnami/postgresql
+    image:
     environment:
       POSTGRESQL_USERNAME: docker
       POSTGRESQL_PASSWORD: docker
