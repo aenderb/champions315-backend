@@ -1,4 +1,17 @@
 import { defineConfig } from "tsup";
+import type { Plugin } from "esbuild";
+
+// Plugin que reescreve imports de generated/prisma para o caminho correto
+// relativo ao build/server.js → ../generated/prisma
+const prismaAliasPlugin: Plugin = {
+  name: "prisma-alias",
+  setup(build) {
+    build.onResolve({ filter: /generated\/prisma/ }, () => ({
+      path: "../generated/prisma",
+      external: true,
+    }));
+  },
+};
 
 export default defineConfig({
   entry: ["src/server.ts"],
@@ -9,18 +22,10 @@ export default defineConfig({
   clean: true,
   minify: false,
   target: "node20",
-  // tsup resolve path aliases do tsconfig automaticamente
   tsconfig: "tsconfig.json",
-  // Externalizar dependências do node_modules
-  external: [
-    // Prisma precisa do generated client em runtime
-    /generated\/prisma/,
-  ],
-  noExternal: [
-    // Não incluir nenhum pacote no bundle — manter tudo externo
-  ],
+  noExternal: [],
+  esbuildPlugins: [prismaAliasPlugin],
   banner: {
-    // Fix para __dirname em ESM
     js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);',
   },
 });
