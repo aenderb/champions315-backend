@@ -23,6 +23,7 @@ export interface IPlayerRepository {
   create(data: ICreatePlayerDTO): Promise<Player>;
   findById(id: string): Promise<Player | null>;
   findByTeamId(teamId: string): Promise<Player[]>;
+  countByTeamId(teamId: string): Promise<number>;
   update(id: string, data: IUpdatePlayerDTO): Promise<Player>;
   delete(id: string): Promise<void>;
 }

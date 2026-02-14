@@ -35,6 +35,10 @@ export class PrismaPlayerRepository implements IPlayerRepository {
     return players;
   }
 
+  async countByTeamId(teamId: string): Promise<number> {
+    return prisma.player.count({ where: { team_id: teamId } });
+  }
+
   async update(id: string, data: IUpdatePlayerDTO): Promise<Player> {
     const player = await prisma.player.update({
       where: { id },

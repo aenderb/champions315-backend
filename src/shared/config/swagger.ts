@@ -1,4 +1,9 @@
 import swaggerJsdoc from "swagger-jsdoc";
+import { env } from "@/env";
+
+const servers = env.NODE_ENV === "production"
+  ? [{ url: "/api", description: "Servidor de produção" }]
+  : [{ url: "http://localhost:3333/api", description: "Servidor de desenvolvimento" }];
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -12,12 +17,7 @@ const options: swaggerJsdoc.Options = {
         name: "Champions 315",
       },
     },
-    servers: [
-      {
-        url: "http://localhost:3333/api",
-        description: "Servidor de desenvolvimento",
-      },
-    ],
+    servers,
     components: {
       schemas: {
         User: {

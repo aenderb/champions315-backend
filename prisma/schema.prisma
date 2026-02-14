@@ -101,7 +101,7 @@ model Player {
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
 
-  team       Team        @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  team       Team        @relation(fields: [team_id], references: [id], onDelete: Restrict)
   lineups    Lineup[]    @relation("LineupStarters")
   bench      Lineup[]    @relation("LineupBench")
   matchCards MatchCard[]
@@ -118,7 +118,7 @@ model Lineup {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  team     Team     @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  team     Team     @relation(fields: [team_id], references: [id], onDelete: Restrict)
   starters Player[] @relation("LineupStarters")
   bench    Player[] @relation("LineupBench")
 
@@ -142,7 +142,7 @@ model Match {
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
-  team  Team        @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  team  Team        @relation(fields: [team_id], references: [id], onDelete: Restrict)
   cards MatchCard[]
 
   @@index([team_id])
@@ -157,7 +157,7 @@ model MatchCard {
   minute    Int?
 
   match  Match  @relation(fields: [match_id], references: [id], onDelete: Cascade)
-  player Player @relation(fields: [player_id], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [player_id], references: [id], onDelete: Restrict)
 
   @@index([match_id])
   @@index([player_id])

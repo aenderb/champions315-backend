@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { Prisma } from '../../../generated/prisma';
 import { HTTP_STATUS } from '../utils/httpStatus';
 
  
@@ -29,6 +30,23 @@ export const errorHandler = (
         message: e.message,
       })),
     });
+  }
+
+  // Erros do Prisma — violação de integridade referencial (Restrict/foreign key)
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === 'P2003') {
+      return res.status(HTTP_STATUS.CONFLICT).json({
+        status: 'error',
+        message: 'Não é possível realizar esta operação. Existem registros dependentes que devem ser removidos primeiro.',
+      });
+    }
+
+    if (err.code === 'P2025') {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        status: 'error',
+        message: 'Registro não encontrado.',
+      });
+    }
   }
 
   // Erro genérico 500
