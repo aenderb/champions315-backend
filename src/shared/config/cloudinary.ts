@@ -17,6 +17,8 @@ export async function uploadToCloudinary(
   fileBuffer: Buffer,
   folder: string
 ): Promise<string> {
+  console.log(`[Cloudinary] Iniciando upload para champions315/${folder} (${(fileBuffer.length / 1024).toFixed(1)} KB)`);
+
   return new Promise((resolve, reject) => {
     cloudinary.uploader
       .upload_stream(
@@ -30,8 +32,10 @@ export async function uploadToCloudinary(
         },
         (error, result) => {
           if (error || !result) {
+            console.error("[Cloudinary] Erro no upload:", error?.message ?? "Resultado vazio");
             return reject(error ?? new Error("Falha no upload para Cloudinary"));
           }
+          console.log(`[Cloudinary] Upload concluído: ${result.secure_url}`);
           resolve(result.secure_url);
         }
       )

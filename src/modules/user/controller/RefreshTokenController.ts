@@ -20,7 +20,7 @@ export class RefreshTokenController {
       res.cookie("token", accessToken, {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
-        sameSite: env.NODE_ENV === "production" ? "strict" : "lax",
+        sameSite: env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 15 * 60 * 1000, // 15 minutos
         path: "/",
       });

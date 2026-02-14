@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import multer from 'multer';
 import { Prisma } from '../../../generated/prisma';
 import { HTTP_STATUS } from '../utils/httpStatus';
 
@@ -15,6 +16,27 @@ export const errorHandler = (
   // Erros customizados com statusCode
   if (err.statusCode) {
     return res.status(err.statusCode).json({
+      status: 'error',
+      message: err.message,
+    });
+  }
+
+  // Erros do Multer (upload de arquivos)
+  if (err instanceof multer.MulterError) {
+    const messages: Record<string, string> = {
+      LIMIT_FILE_SIZE: 'Arquivo muito grande. Máximo permitido: 5MB.',
+      LIMIT_FILE_COUNT: 'Número máximo de arquivos excedido.',
+      LIMIT_UNEXPECTED_FILE: 'Campo de arquivo inesperado.',
+    };
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      status: 'error',
+      message: messages[err.code] ?? `Erro no upload: ${err.message}`,
+    });
+  }
+
+  // Erro de tipo de arquivo (fileFilter do multer)
+  if (err.message?.includes('Tipo de arquivo inválido')) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       status: 'error',
       message: err.message,
     });

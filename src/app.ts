@@ -13,9 +13,13 @@ export const app = express();
 app.use(cors({
   origin: env.CORS_ORIGIN,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['set-cookie'],
 }));
+
+// Render pode usar proxy reverso — necessário para cookies secure funcionarem
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(cookieParser());
 

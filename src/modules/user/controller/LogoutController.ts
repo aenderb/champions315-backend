@@ -15,7 +15,7 @@ export class LogoutController {
       const cookieOptions = {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
-        sameSite: env.NODE_ENV === "production" ? "strict" as const : "lax" as const,
+        sameSite: env.NODE_ENV === "production" ? "none" as const : "lax" as const,
         path: "/",
       };
 
