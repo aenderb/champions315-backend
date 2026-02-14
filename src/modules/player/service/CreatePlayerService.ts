@@ -22,6 +22,9 @@ export class CreatePlayerService {
       throw new ForbiddenError("Você não tem permissão para adicionar jogadores neste time");
     }
 
+    // Se a posição for GK, field_role é sempre GK
+    const fieldRole = data.position === "GK" ? "GK" : data.field_role;
+
     const player = await this.playerRepository.create({
       team_id: teamId,
       number: data.number,
@@ -29,7 +32,7 @@ export class CreatePlayerService {
       birth_date: new Date(data.birth_date),
       avatar: data.avatar,
       position: data.position as Position,
-      field_role: data.field_role as FieldRole | undefined,
+      field_role: fieldRole as FieldRole | undefined,
     });
 
     return player;

@@ -24,13 +24,17 @@ export class UpdatePlayerService {
       throw new ForbiddenError("Você não tem permissão para editar este jogador");
     }
 
+    // Determina field_role: se position for GK (vindo no body ou já existente), força GK
+    const effectivePosition = data.position ?? player.position;
+    const fieldRole = effectivePosition === "GK" ? "GK" : data.field_role;
+
     const updatedPlayer = await this.playerRepository.update(playerId, {
       number: data.number,
       name: data.name,
       birth_date: data.birth_date ? new Date(data.birth_date) : undefined,
       avatar: data.avatar,
       position: data.position as Position | undefined,
-      field_role: data.field_role as FieldRole | null | undefined,
+      field_role: fieldRole as FieldRole | null | undefined,
     });
 
     return updatedPlayer;
