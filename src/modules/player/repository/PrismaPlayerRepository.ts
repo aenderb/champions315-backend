@@ -12,6 +12,7 @@ export class PrismaPlayerRepository implements IPlayerRepository {
         birth_date: data.birth_date,
         avatar: data.avatar ?? null,
         position: data.position,
+        field_role: data.field_role ?? null,
       },
     });
 

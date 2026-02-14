@@ -25,6 +25,8 @@ export class CreatePlayerService {
     // Se a posição for GK, field_role é sempre GK
     const fieldRole = data.position === "GK" ? "GK" : data.field_role;
 
+    console.log("[CreatePlayerService] position:", data.position, "| field_role recebido:", data.field_role, "| fieldRole calculado:", fieldRole);
+
     const player = await this.playerRepository.create({
       team_id: teamId,
       number: data.number,
