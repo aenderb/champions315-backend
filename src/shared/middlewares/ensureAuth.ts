@@ -10,7 +10,22 @@ interface TokenPayload {
 }
 
 export function ensureAuth(req: Request, _res: Response, next: NextFunction): void {
-  const token = req.cookies?.token;
+  // 1. Tenta ler do cookie
+  let token = req.cookies?.token;
+
+  // 2. Fallback: header Authorization Bearer
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    }
+  }
+
+  if (env.NODE_ENV === "production") {
+    console.log("[ensureAuth] cookies recebidos:", Object.keys(req.cookies ?? {}));
+    console.log("[ensureAuth] origin:", req.headers.origin);
+    console.log("[ensureAuth] token presente:", !!token);
+  }
 
   if (!token) {
     throw new UnauthorizedError("Token não fornecido");
