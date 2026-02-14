@@ -13,6 +13,9 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string(),
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_API_SECRET: z.string(),
+  RATE_LIMIT_GENERAL_MAX: z.coerce.number().default(100),
+  RATE_LIMIT_AUTH_MAX: z.coerce.number().default(5),
+  RATE_LIMIT_SIGNUP_MAX: z.coerce.number().default(3),
 });
 
 export const _env = envSchema.safeParse(process.env);
