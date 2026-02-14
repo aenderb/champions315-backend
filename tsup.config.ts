@@ -7,7 +7,7 @@ const prismaAliasPlugin: Plugin = {
   name: "prisma-alias",
   setup(build) {
     build.onResolve({ filter: /generated\/prisma/ }, () => ({
-      path: "../generated/prisma",
+      path: "../generated/prisma/index.js",
       external: true,
     }));
   },
